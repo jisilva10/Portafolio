@@ -70,7 +70,7 @@ export function ParticleSphere() {
             const z = radiusVariation * Math.sin(theta) * Math.sin(phi)
 
             particles.push({
-                position: [x, y, z],
+                position: [x, y, z] as [number, number, number],
                 scale: Math.random() * (PARTICLE_SIZE_MAX - PARTICLE_SIZE_MIN) + PARTICLE_SIZE_MIN,
                 color: new THREE.Color().setHSL(
                     Math.random() * 0.1 + 0.05,
@@ -105,7 +105,7 @@ export function ParticleSphere() {
             euler.z += Math.PI
 
             images.push({
-                position: [x, y, z],
+                position: [x, y, z] as [number, number, number],
                 rotation: [euler.x, euler.y, euler.z],
                 textureIndex: i % textures.length,
                 color: new THREE.Color().setHSL(Math.random(), 0.7, 0.6),
