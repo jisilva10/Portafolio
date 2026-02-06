@@ -106,7 +106,7 @@ export function ParticleSphere() {
 
             images.push({
                 position: [x, y, z] as [number, number, number],
-                rotation: [euler.x, euler.y, euler.z],
+                rotation: [euler.x, euler.y, euler.z] as [number, number, number],
                 textureIndex: i % textures.length,
                 color: new THREE.Color().setHSL(Math.random(), 0.7, 0.6),
             })
