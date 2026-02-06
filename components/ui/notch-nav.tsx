@@ -108,7 +108,7 @@ export function NotchNav({
                         return (
                             <li key={item.value} role="none">
                                 <button
-                                    ref={(el) => (itemRefs.current[idx] = el)}
+                                    ref={(el) => { itemRefs.current[idx] = el }}
                                     role="menuitem"
                                     aria-current={isActive ? "page" : undefined}
                                     aria-pressed={isActive || undefined}
