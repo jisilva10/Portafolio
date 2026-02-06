@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { useState } from "react";
+import React, { useState, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ interface CardItem {
     description?: string; // Content for the popup
     component?: React.ReactNode; // Optional component to render
     preview?: React.ReactNode; // Optional preview to render in the card
+    disableLayoutAnimation?: boolean; // Optional flag to disable layout animation for problematic components
 }
 
 interface SectionGridProps {
@@ -23,6 +24,23 @@ interface SectionGridProps {
 
 export function SectionGrid({ title, id, items }: SectionGridProps) {
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
+    const [previewVersion, setPreviewVersion] = useState(0);
+    const [, forceUpdate] = useState(0);
+
+    const handleClose = () => {
+        setSelectedId(null);
+        setTimeout(() => setPreviewVersion(v => v + 1), 300);
+    };
+
+    // Callback to capture node and update the stable ref
+    const setModalRef = React.useCallback((node: HTMLDivElement | null) => {
+        if (node) {
+            // Cast to mutable to assign to readonly current property
+            (modalRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+            forceUpdate(n => n + 1);
+        }
+    }, []);
 
     return (
         <section id={id} className="max-w-6xl mx-auto py-12 px-4">
@@ -30,8 +48,8 @@ export function SectionGrid({ title, id, items }: SectionGridProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {items.map((card) => (
                     <motion.div
-                        layoutId={card.id}
-                        key={card.id}
+                        layoutId={card.disableLayoutAnimation ? undefined : card.id}
+                        key={`${card.id}-${previewVersion}`}
                         onClick={() => setSelectedId(card.id)}
                         className="relative group rounded-xl overflow-hidden cursor-pointer"
                     >
@@ -65,28 +83,34 @@ export function SectionGrid({ title, id, items }: SectionGridProps) {
 
             <AnimatePresence>
                 {selectedId && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedId(null)}>
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={handleClose}>
                         {items.filter(item => item.id === selectedId).map(item => (
                             <motion.div
-                                layoutId={item.id}
                                 key={item.id}
                                 className={cn(
-                                    "w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#1a1a1a] max-h-[90vh] overflow-y-auto",
+                                    "w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#1a1a1a] max-h-[90vh] overflow-y-auto flex flex-col",
                                     item.component ? "max-w-6xl h-full" : "max-w-2xl"
                                 )}
                                 onClick={(e) => e.stopPropagation()}
+                                ref={setModalRef}
                             >
                                 {/* Close button always visible */}
                                 <button
-                                    onClick={() => setSelectedId(null)}
+                                    onClick={handleClose}
                                     className="absolute top-4 right-4 z-50 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
 
                                 {item.component ? (
-                                    <div className="w-full h-full min-h-[500px]">
-                                        {item.component}
+                                    <div className="w-full flex-1 relative flex flex-col min-h-[500px]">
+                                        {/* Inject scrollContainerRef if the component renders something that can accept it */}
+                                        {React.isValidElement(item.component)
+                                            ? React.cloneElement(item.component as React.ReactElement<any>, {
+                                                scrollContainerRef: modalRef
+                                            })
+                                            : item.component
+                                        }
                                     </div>
                                 ) : (
                                     <>

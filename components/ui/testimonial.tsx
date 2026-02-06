@@ -26,6 +26,13 @@ const TestimonialCarousel = React.forwardRef<
     ) => {
         const [currentIndex, setCurrentIndex] = React.useState(0)
         const [exitX, setExitX] = React.useState<number>(0)
+        const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+
+        React.useEffect(() => {
+            return () => {
+                if (timeoutRef.current) clearTimeout(timeoutRef.current)
+            }
+        }, [])
 
         const handleDragEnd = (
             event: MouseEvent | TouchEvent | PointerEvent,
@@ -33,7 +40,8 @@ const TestimonialCarousel = React.forwardRef<
         ) => {
             if (Math.abs(info.offset.x) > 100) {
                 setExitX(info.offset.x)
-                setTimeout(() => {
+                if (timeoutRef.current) clearTimeout(timeoutRef.current)
+                timeoutRef.current = setTimeout(() => {
                     setCurrentIndex((prev) => (prev + 1) % testimonials.length)
                     setExitX(0)
                 }, 200)

@@ -1,17 +1,23 @@
 "use client";
 import React, { useRef } from "react";
 import { useScroll, useTransform, motion, MotionValue } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 export const ContainerScroll = ({
     titleComponent,
     children,
+    scrollContainerRef,
+    className,
 }: {
     titleComponent: string | React.ReactNode;
     children: React.ReactNode;
+    scrollContainerRef?: React.RefObject<HTMLDivElement>;
+    className?: string;
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const { scrollYProgress } = useScroll({
         target: containerRef,
+        container: scrollContainerRef,
         offset: ["start end", "end start"],
     });
     const [isMobile, setIsMobile] = React.useState(false);
@@ -37,7 +43,10 @@ export const ContainerScroll = ({
 
     return (
         <div
-            className="h-[60rem] md:h-[80rem] flex items-center justify-center relative p-2 md:p-20"
+            className={cn(
+                "h-[60rem] md:h-[80rem] flex items-center justify-center relative p-2 md:p-20",
+                className
+            )}
             ref={containerRef}
         >
             <div
